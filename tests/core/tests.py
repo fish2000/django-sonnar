@@ -7,8 +7,8 @@ from django.test import TestCase
 from PIL import Image
 from core.models import TestModel
 
-# this next thing is to avoid a glitch in nose --
-# see also: https://github.com/jbalogh/django-nose/issues/15#issuecomment-1033686
+# this next thing is to avoid a glitch in nose -- see also: 
+# https://github.com/jbalogh/django-nose/issues/15#issuecomment-1033686
 TestModel._meta.get_all_related_objects()
 
 class SonnarTests(TestCase):

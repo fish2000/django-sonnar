@@ -41,12 +41,9 @@ class ModularFileDescriptor(files.FileDescriptor):
 
 class FeaturefulFieldFile(files.FieldFile):
     def __new__(cls, instance, field, name):
-        
         supercls = files.FieldFile
-        
         def __init__(self, instance, field, name):
             supercls.__init__(self, instance, field, name)
-            print "*** YO DOGG: %s" % self._features
         
         outdic = dict(cls.__dict__)
         outdic.update({
@@ -56,6 +53,7 @@ class FeaturefulFieldFile(files.FieldFile):
         
         OutCls = type('FeaturefulSubclass', (supercls,), outdic)
         out_field_file = OutCls(instance, field, name)
+        
         for feature in field.features:
             feature.contribute_to_field(out_field_file, instance, field.name, feature.name)
         return out_field_file
