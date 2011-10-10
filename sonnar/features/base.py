@@ -55,14 +55,6 @@ class FeatureDescriptor(object):
         
         print "*** FeatureDescriptor initialized for feature %s in %s.%s (%s)" % (
             feature.name, instance.__class__.__name__, field_name, field_file)
-        
-        if feature.preload:
-            signals.prepare_feature.send_now(
-                sender=self.field_file.__class__,
-                instance=self.instance,
-                field_name=self.field_name,
-                field_file=self.field_file,
-                feature_name=feature.name)
     
     def __get__(self, field_file=None, owner=None):
         if field_file is None:
@@ -107,7 +99,8 @@ class Feature(object):
             else:
                 self.requires.append(requires)
     
-    def prepare_value(self, **kwargs): # signal, sender, instance, field_name, feature_name
+    # signal, sender, instance, field_file, field_name, feature_name
+    def prepare_value(self, **kwargs):
         instance = kwargs.get('instance')
         field_file = kwargs.get('field_file')
         field_name = kwargs.get('field_name')

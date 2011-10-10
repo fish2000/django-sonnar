@@ -47,14 +47,14 @@ class FeaturefulFieldFile(files.FieldFile):
         
         outdic = dict(cls.__dict__)
         outdic.update({
-            '_features': dict([(feature.name, feature) for feature in field.features]),
+            '_features': field._features,
             '__init__': __init__,
         })
         
         OutCls = type('FeaturefulSubclass', (supercls,), outdic)
         out_field_file = OutCls(instance, field, name)
         
-        for feature in field.features:
+        for feature in field._features.values():
             feature.contribute_to_field(out_field_file, instance, field.name, feature.name)
         return out_field_file
 
@@ -70,7 +70,7 @@ class ModularField(files.FileField):
     attr_class = ModularFieldFile
     descriptor_class = ModularFileDescriptor
     description = ugettext_lazy("Modular file path")
-    features = []
+    _features = {}
     
     def __init__(self, verbose_name=None, name=None, hash_field=None, **kwargs):
         self.hash_field = hash_field
@@ -82,7 +82,7 @@ class ModularField(files.FileField):
                     if feature.__class__ in [f.__class__ for f in self.features]:
                         raise ImproperlyConfigured("%s is a unique feature -- you can only add one per %s" % (
                             feature.__class__.__name__, self.__class__.__name__))
-                self.features.append(feature)
+                self._features.update({ feature.name: feature })
             else:
                 raise ImproperlyConfigured("%s isn't a valid feature." % (
                     feature.__class__.__name__,))
@@ -92,11 +92,23 @@ class ModularField(files.FileField):
     def contribute_to_class(self, cls, name):
         super(ModularField, self).contribute_to_class(cls, name)
         
-        for feature in self.features:
+        for feature in self._features.values():
             feature.contribute_to_class(cls, name)
         
         signals.post_init.connect(self.update_data_fields, sender=cls,
             dispatch_uid="update-data-fields")
+        signals.post_init.connect(self.preload_features, sender=cls,
+            dispatch_uid="preload-features")
+    
+    def preload_features(self, instance, **kwargs):
+        for feature in self._features.values():
+            if feature.preload:
+                feature.prepare_value(
+                    instance=instance,
+                    field_file=self,
+                    field_name=self.name,
+                    feature_name=feature.name,
+                )
     
     def update_data_fields(self, instance, force=False, *args, **kwargs):
         if not self.hash_field:
