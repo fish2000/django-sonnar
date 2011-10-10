@@ -15,12 +15,12 @@ from pprint import pprint
             max_length=255,
             db_index=True,
             features=(
-                PILFeature('image'),
-                OpenCVFeature('cvdata'),
+                PILImage('image'),
+                OpenCVHandle('cvdata'),
                 WidthFeature('width',
-                    source=features.PILFeature),
+                    source=PILImage),
                 HeightFeature('height',
-                    source=features.PILFeature),
+                    source=PILImage),
             ))
     
     ----------------------------------------------------------------
@@ -64,20 +64,20 @@ class FeatureDescriptor(object):
                 field_file=self.field_file,
                 feature_name=feature.name)
     
-    def __get__(self, instance=None, owner=None):
-        if instance is None:
+    def __get__(self, field_file=None, owner=None):
+        if field_file is None:
             raise AttributeError(
                 "The '%s' feature can only be accessed from %s instances."
                 % (self.feature_name, owner.__name__))
         
-        feature = instance._features[self.feature_name]
+        feature = field_file._features[self.feature_name]
         
         if feature.value is None:
             print signals.prepare_feature.send_now(
-                sender=self.field_file.__class__,
+                sender=field_file.__class__,
                 instance=self.instance,
                 field_name=self.field_name,
-                field_file=instance,
+                field_file=field_file,
                 feature_name=feature.name)
         
         return feature.get_value()
@@ -123,12 +123,9 @@ class Feature(object):
         return self.value
     
     def contribute_to_field(self, field_file, instance, field_name, name):
-        
         if not hasattr(field_file.__class__, name):
-            
             setattr(field_file.__class__, name, self.descriptor(self,
                 instance=instance, field_name=field_name, field_file=field_file))
-            
             signals.prepare_feature.connect(self.prepare_value,
                 sender=field_file.__class__,
                 dispatch_uid="feature-prepare-feature-%s" % field_name)
