@@ -60,6 +60,12 @@ class FeaturefulFieldFile(files.FieldFile):
 
 class ModularFieldFile(FeaturefulFieldFile, ModularFile):
     """ django.db.models.fields.files.FileDescriptor subclass """
+    
+    def save(self, name, content, save=True):
+        if hasattr(self, '_file'):
+            files.FieldFile.delete(self, save=save)
+        files.FieldFile.save(self, name, content, save=save)
+    
     def delete(self, save=True):
         if hasattr(self, '_file_hash'):
             del self._file_hash
@@ -106,8 +112,6 @@ class ModularField(files.FileField):
         if instance.pk:
             for feature in self._features.values():
                 if feature.preload:
-                    print "*** Preloading %s feature %s for pk: %s" % (
-                        feature.__class__.__name__, feature.name, instance.pk)
                     feature._prepare_value(
                         instance=instance,
                         field_file=self,

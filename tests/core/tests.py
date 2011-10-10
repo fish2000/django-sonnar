@@ -31,34 +31,37 @@ class SonnarTests(TestCase):
         one_feature = mf.a_feature
         one_other_feature = mf.another_feature
         
-        print "\none feature: %s" % one_feature
-        print "\none other feature: %s\n" % one_other_feature
+        #print "\none feature: %s" % one_feature
+        #print "\none other feature: %s\n" % one_other_feature
+        self.assertTrue('a_feature' in one_feature)
+        self.assertTrue('another_feature' in one_other_feature)
     
     def test_pil_feature(self):
-        print "PIL Image: %s" % self.p.modfile.pil
+        #print "PIL Image: %s" % self.p.modfile.pil
+        self.assertTrue(isinstance(self.p.modfile.pil, Image.Image))
     
     def test_width_height_features(self):
-        #print "PIL Image: %s" % self.p.modfile.pil
-        print "*** Width: %s" % self.p.modfile.width
-        print "*** Height: %s" % self.p.modfile.height
+        #print "*** Width: %s" % self.p.modfile.width
+        #print "*** Height: %s" % self.p.modfile.height
+        self.assertTrue(int(self.p.modfile.width) == 800)
+        self.assertTrue(int(self.p.modfile.height) == 600)
     
     def test_opencv_feature_without_source(self):
-        #print "PIL Image: %s" % self.p.modfile.pil
         print "*** OpenCV (via filesystem): %s" % self.p.modfile.cv2
+        
     
     def test_opencv_feature_with_source(self):
-        #print "PIL Image: %s" % self.p.modfile.pil
         print "*** OpenCV (via PIL source): %s" % self.p.modfile.cv
         
     
-    def _test_save_image(self):
+    def test_save_image(self):
         img = self.generate_image()
-        path = self.p.image.path
-        self.p.save_image('test2.jpg', ContentFile(img.read()))
+        path = self.p.modfile.path
+        self.p.modfile.save('test2.jpg', ContentFile(img.read()))
         self.failIf(os.path.isfile(path))
-        path = self.p.image.path
+        path = self.p.modfile.path
         img.seek(0)
-        self.p.save_image('test.jpg', ContentFile(img.read()))
+        self.p.modfile.save('test.jpg', ContentFile(img.read()))
         self.failIf(os.path.isfile(path))
         img.close()
     

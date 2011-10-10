@@ -115,6 +115,7 @@ class Feature(object):
         feature = field_file._features[feature_name]
         source = field_file._features.get(feature.source, None)
         
+        # RECURSION!!!!!!!!
         if source is not None:
             source._prepare_value(instance=instance, field_file=field_file,
                 field_name=field_name, feature_name=source.name)
