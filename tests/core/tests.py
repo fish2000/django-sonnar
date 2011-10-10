@@ -76,7 +76,7 @@ class HasherTests(SonnarBaseTest):
         self.p.save()
         self.assertEqual(
             self.p.modfile.filehash,
-            self.p.modfile.shaaaa1,
+            self.p.modfile.sha1,
         )
     
     def test_featurehash_base_class_three(self):
@@ -97,13 +97,13 @@ class HasherTests(SonnarBaseTest):
         self.p.save()
         self.assertEqual(
             self.p.modfile.sha1feature,
-            self.p.modfile.shaaaa1,
+            self.p.modfile.sha1,
         )
     def test_featurehash_base_class_five(self):
         self.p.save()
         self.assertEqual(
             self.p.modfile.featurehash,
-            self.p.modfile.shaaaa1,
+            self.p.modfile.sha1,
         )
 
 class CustomHasherTests(SonnarBaseTest):

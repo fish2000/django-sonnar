@@ -131,15 +131,6 @@ class Feature(object):
     def get_value(self):
         return self.value
     
-    @property
-    def val(self):
-        if self.value is None:
-            if self.default is None:
-                raise ValueError("Feature %s has no prepared value.")
-            else:
-                return self.default
-        return self.get_value()
-    
     def contribute_to_field(self, field_file, instance, field_name, name):
         if not hasattr(field_file.__class__, name):
             if field_file is not None:

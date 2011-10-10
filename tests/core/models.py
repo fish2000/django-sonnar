@@ -27,7 +27,7 @@ class TestHashingModel(models.Model):
         upload_to="modfiles",
         features=(
             SHA1('filehash', preload=True),
-            SHA1Feature('shaaaa1', preload=True),
+            SHA1Feature('sha1', preload=True),
             
             HashFeature('featurehash', preload=True),
             HashFeature('sha1feature', preload=True,

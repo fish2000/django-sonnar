@@ -74,7 +74,7 @@ class FeaturefulFieldFile(files.FieldFile):
             '__init__': __init__,
         })
         
-        OutCls = type('FeaturefulFieldFile', (supercls,), outdic)
+        OutCls = type(cls.__name__, (supercls,), outdic)
         out_field_file = OutCls(instance, field, name)
         
         for feature in field._features.values():
