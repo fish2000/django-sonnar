@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy
 
 from django.db import models
 from django.db.models import signals
-from sonnar.features import Feature
+from sonnar.features.base import Feature
 
 class ModularFile(files.File):
     """ django.core.files.File subclass """

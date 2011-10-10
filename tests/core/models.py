@@ -1,7 +1,7 @@
 
 from django.db import models
 from sonnar.modelfields import ModularField
-from sonnar.features import Feature
+from sonnar.features.base import Feature
 
 class TestModel(models.Model):
     id = models.AutoField(primary_key=True)
