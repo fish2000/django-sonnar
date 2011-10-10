@@ -1,7 +1,6 @@
 
 import cv
 from sonnar.features.base import Feature
-from pprint import pprint
 
 try:
     from PIL import Image

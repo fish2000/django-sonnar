@@ -1,5 +1,6 @@
 
 import uuid, hashlib
+from django.db.models import fields
 from django.db.models.fields import files
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy
@@ -8,9 +9,29 @@ from django.db import models
 from django.db.models import signals
 from sonnar.features.base import Feature
 
+
+class FileHashField(fields.CharField):
+    """
+    Store the sha1 of the file we're looking at.
+    
+    See also:
+    https://github.com/fish2000/django-imagekit/blob/develop/imagekit/modelfields.py#L449
+    
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('db_index', True)
+        kwargs.setdefault('max_length', 40)
+        kwargs.setdefault('editable', False)
+        #kwargs.setdefault('unique', True)
+        kwargs.setdefault('blank', True)
+        kwargs.setdefault('null', True)
+        super(FileHashField, self).__init__(*args, **kwargs)
+
+
 class ModularFile(files.File):
     """ django.core.files.File subclass """
-    def _calculate_hash(self, hshdata):
+    @staticmethod
+    def _calculate_hash(hshdata):
         return hashlib.sha1(hshdata).hexdigest()
     
     def _load_file_hash(self):
@@ -19,7 +40,7 @@ class ModularFile(files.File):
             self.open()
             pos = self.tell()
             dat = self.read()
-            self._file_hash = self._calculate_hash(dat)
+            self._file_hash = ModularFile._calculate_hash(dat)
             
             if close:
                 self.close()
@@ -28,8 +49,9 @@ class ModularFile(files.File):
         return self._file_hash
     
     def _get_hsh(self):
-        return self._load_file_hash
+        return self._load_file_hash()
     hsh = property(_get_hsh)
+
 
 class ModularFileDescriptor(files.FileDescriptor):
     """ django.db.models.fields.files.FileDescriptor subclass """
@@ -38,6 +60,7 @@ class ModularFileDescriptor(files.FileDescriptor):
         super(ModularFileDescriptor, self).__set__(instance, value)
         if previous_file is not None:
             self.field.update_data_fields(instance, force=True)
+
 
 class FeaturefulFieldFile(files.FieldFile):
     def __new__(cls, instance, field, name):
@@ -51,15 +74,20 @@ class FeaturefulFieldFile(files.FieldFile):
             '__init__': __init__,
         })
         
-        OutCls = type('FeaturefulSubclass', (supercls,), outdic)
+        OutCls = type('FeaturefulFieldFile', (supercls,), outdic)
         out_field_file = OutCls(instance, field, name)
         
         for feature in field._features.values():
             feature.contribute_to_field(out_field_file, instance, field.name, feature.name)
         return out_field_file
 
+
 class ModularFieldFile(FeaturefulFieldFile, ModularFile):
     """ django.db.models.fields.files.FileDescriptor subclass """
+    
+    def __init__(self, *args, **kwargs):
+        FeaturefulFieldFile.__init__(self, *args, **kwargs)
+        ModularFile.__init__(self, *args, **kwargs)
     
     def save(self, name, content, save=True):
         if hasattr(self, '_file'):
@@ -70,6 +98,25 @@ class ModularFieldFile(FeaturefulFieldFile, ModularFile):
         if hasattr(self, '_file_hash'):
             del self._file_hash
         super(ModularFieldFile, self).delete(save)
+    
+    def _load_file_hash(self):
+        if not hasattr(self, "_file_hash"):
+            close = self.closed
+            self.open()
+            pos = self.tell()
+            dat = self.read()
+            self._file_hash = ModularFile._calculate_hash(dat)
+            
+            if close:
+                self.close()
+            else:
+                self.seek(pos)
+        return self._file_hash
+    
+    @property
+    def hsh(self):
+        return self._load_file_hash()
+
 
 class ModularField(files.FileField):
     """ django.db.models.fields.files.FileField subclass """
@@ -105,6 +152,9 @@ class ModularField(files.FileField):
             dispatch_uid="post-init-update-data-fields")
         signals.post_init.connect(self.preload_features, sender=cls,
             dispatch_uid="post-init-preload-features")
+        
+        signals.post_init.connect(self.update_data_fields, sender=cls,
+            dispatch_uid="post-save-update-data-fields")
         signals.post_save.connect(self.preload_features, sender=cls,
             dispatch_uid="post-save-preload-features")
     

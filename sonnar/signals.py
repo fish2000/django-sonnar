@@ -13,6 +13,10 @@ except ImportError:
     ModelInstanceMap = IDMap = PickleMap = None
 
 
+refresh_hash = BaseSignal(providing_args={
+    'instance':             ModelInstanceMap,
+})
+
 preload_features = BaseSignal(providing_args={
     'instance':             ModelInstanceMap,
     'field_name':           IDMap,
@@ -22,7 +26,6 @@ clear_features = BaseSignal(providing_args={
     'instance':             ModelInstanceMap,
     'field_name':           IDMap,
 })
-
 
 prepare_feature = BaseSignal(providing_args={
     'instance':             ModelInstanceMap,
