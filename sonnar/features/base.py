@@ -2,8 +2,6 @@
 import types
 from sonnar import signals
 
-from pprint import pprint
-
 """
     from sonnar.features import PILFeature, OpenCVFeature, WidthFeature, HeightFeature
     
@@ -15,12 +13,18 @@ from pprint import pprint
             max_length=255,
             db_index=True,
             features=(
+                
                 PILImage('image'),
                 OpenCVHandle('cvdata'),
+                
                 WidthFeature('width',
-                    source=PILImage),
+                    default=0,
+                    source='image'),
+                
                 HeightFeature('height',
-                    source=PILImage),
+                    default=0,
+                    source='image'),
+            
             ))
     
     ----------------------------------------------------------------
@@ -47,14 +51,14 @@ class FeatureDescriptor(object):
     field_file = None
     
     def __init__(self, feature, instance=None, field_name=None, field_file=None):
+        ''' print "*** FeatureDescriptor initialized for feature %s in %s.%s (%s)" % (
+            feature.name, instance.__class__.__name__, field_name, field_file) '''
         object.__init__(self)
         self.feature_name = feature.name
         self.instance = instance
         self.field_name = field_name
         self.field_file = field_file
         
-        print "*** FeatureDescriptor initialized for feature %s in %s.%s (%s)" % (
-            feature.name, instance.__class__.__name__, field_name, field_file)
     
     def __get__(self, field_file=None, owner=None):
         if field_file is None:
@@ -65,7 +69,7 @@ class FeatureDescriptor(object):
         feature = field_file._features[self.feature_name]
         
         if feature.value is None:
-            print signals.prepare_feature.send_now(
+            signals.prepare_feature.send_now(
                 sender=field_file.__class__,
                 instance=self.instance,
                 field_name=self.field_name,
@@ -80,6 +84,8 @@ class Feature(object):
     source = None
     unique = False
     preload = False
+    default = None
+    
     descriptor = FeatureDescriptor
     requires = []
     
@@ -88,9 +94,10 @@ class Feature(object):
     def __init__(self, name, *args, **kwargs):
         object.__init__(self)
         self.name = name
-        self.source = kwargs.pop('source', None)
-        self.unique = kwargs.pop('unique', False)
-        self.preload = kwargs.pop('preload', False)
+        self.source = kwargs.pop('source', self.source)
+        self.unique = kwargs.pop('unique', self.unique)
+        self.preload = kwargs.pop('preload', self.preload)
+        self.default = kwargs.pop('default', self.default)
         
         requires = kwargs.pop('requires', [])
         if requires is not None:
@@ -99,31 +106,52 @@ class Feature(object):
             else:
                 self.requires.append(requires)
     
-    # signal, sender, instance, field_file, field_name, feature_name
-    def prepare_value(self, **kwargs):
+    def _prepare_value(self, **kwargs): # signal, sender, instance, field_file, field_name, feature_name
         instance = kwargs.get('instance')
         field_file = kwargs.get('field_file')
         field_name = kwargs.get('field_name')
         feature_name = kwargs.get('feature_name')
         
         feature = field_file._features[feature_name]
+        source = field_file._features.get(feature.source, None)
         
-        feature.value = "%s %s -> %s -> %s" % (
+        if source is not None:
+            source._prepare_value(instance=instance, field_file=field_file,
+                field_name=field_name, feature_name=source.name)
+        
+        feature.value = feature.prepare_value(instance, field_file, field_name,
+            source=source)
+        
+    def prepare_value(self, instance, field_file, field_name, source=None):
+        return "%s %s -> %s -> %s" % (
             instance.__class__.__name__, instance.pk,
-            field_name, feature_name)
+            field_name, self.name)
     
     def get_value(self):
         return self.value
     
+    @property
+    def val(self):
+        if self.value is None:
+            if self.default is None:
+                raise ValueError("Feature %s has no prepared value.")
+            else:
+                return self.default
+        return self.get_value()
+    
     def contribute_to_field(self, field_file, instance, field_name, name):
         if not hasattr(field_file.__class__, name):
-            setattr(field_file.__class__, name, self.descriptor(self,
-                instance=instance, field_name=field_name, field_file=field_file))
-            signals.prepare_feature.connect(self.prepare_value,
-                sender=field_file.__class__,
-                dispatch_uid="feature-prepare-feature-%s" % field_name)
+            if field_file is not None:
+                
+                setattr(field_file.__class__, name, self.descriptor(self,
+                    instance=instance, field_name=field_name, field_file=field_file))
+                
+                signals.prepare_feature.connect(self._prepare_value,
+                    sender=field_file.__class__,
+                    dispatch_uid="feature-prepare-feature-%s" % field_name)
     
     def contribute_to_class(self, cls, name):
         pass
+    
     
     

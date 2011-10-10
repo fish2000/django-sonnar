@@ -26,13 +26,30 @@ class SonnarTests(TestCase):
         self.p.save()
         img.close()
     
-    def test_sonnar(self):
+    def test_base_feature(self):
         mf = self.p.modfile
         one_feature = mf.a_feature
         one_other_feature = mf.another_feature
         
-        print "\n%s" % one_feature
-        print "\n%s\n" % one_other_feature
+        print "\none feature: %s" % one_feature
+        print "\none other feature: %s\n" % one_other_feature
+    
+    def test_pil_feature(self):
+        print "PIL Image: %s" % self.p.modfile.pil
+    
+    def test_width_height_features(self):
+        #print "PIL Image: %s" % self.p.modfile.pil
+        print "*** Width: %s" % self.p.modfile.width
+        print "*** Height: %s" % self.p.modfile.height
+    
+    def test_opencv_feature_without_source(self):
+        #print "PIL Image: %s" % self.p.modfile.pil
+        print "*** OpenCV (via filesystem): %s" % self.p.modfile.cv2
+    
+    def test_opencv_feature_with_source(self):
+        #print "PIL Image: %s" % self.p.modfile.pil
+        print "*** OpenCV (via PIL source): %s" % self.p.modfile.cv
+        
     
     def _test_save_image(self):
         img = self.generate_image()

@@ -10,7 +10,7 @@ try:
     from signalqueue.mappings import ModelInstanceMap, PickleMap, IDMap
 except ImportError:
     BaseSignal = SyncSignal
-    ModelInstanceMap = IDMap = None
+    ModelInstanceMap = IDMap = PickleMap = None
 
 
 preload_features = BaseSignal(providing_args={

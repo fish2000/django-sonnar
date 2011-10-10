@@ -96,19 +96,24 @@ class ModularField(files.FileField):
             feature.contribute_to_class(cls, name)
         
         signals.post_init.connect(self.update_data_fields, sender=cls,
-            dispatch_uid="update-data-fields")
+            dispatch_uid="post-init-update-data-fields")
         signals.post_init.connect(self.preload_features, sender=cls,
-            dispatch_uid="preload-features")
+            dispatch_uid="post-init-preload-features")
+        signals.post_save.connect(self.preload_features, sender=cls,
+            dispatch_uid="post-save-preload-features")
     
     def preload_features(self, instance, **kwargs):
-        for feature in self._features.values():
-            if feature.preload:
-                feature.prepare_value(
-                    instance=instance,
-                    field_file=self,
-                    field_name=self.name,
-                    feature_name=feature.name,
-                )
+        if instance.pk:
+            for feature in self._features.values():
+                if feature.preload:
+                    print "*** Preloading %s feature %s for pk: %s" % (
+                        feature.__class__.__name__, feature.name, instance.pk)
+                    feature._prepare_value(
+                        instance=instance,
+                        field_file=self,
+                        field_name=self.name,
+                        feature_name=feature.name,
+                    )
     
     def update_data_fields(self, instance, force=False, *args, **kwargs):
         if not self.hash_field:
