@@ -57,53 +57,35 @@ class HasherTests(SonnarBaseTest):
     modl = TestHashingModel
     
     def test_sha1_data_hash(self):
-        print "HASH: %s" % self.p.modfile.filehash
-        print "HASH: %s" % self.p.modfile.featurehash
-        print "HASH: %s" % self.p.modfile.sha1
+        self.p.save()
+        print "HASH: %s" % self.p.modfile.datahash
+        print "HASH: %s" % self.p.modfile.shaaaa1
+        print "HASH: %s" % self.p.modfile.sha1feature
         
-        print "HASH: %s" % self.p.modfile.filehash
-        print "HASH: %s" % self.p.modfile.featurehash
-        print "HASH: %s" % self.p.modfile.sha1
-    
-    def test_featurehash_base_class_one(self):
         self.p.save()
+        print "HASH: %s" % self.p.modfile.datahash
+        print "HASH: %s" % self.p.modfile.shaaaa1
+        print "HASH: %s" % self.p.modfile.sha1feature
+    
+    def _test_featurehash_base_class_two(self):
+        #self.p.save()
         self.assertEqual(
-            self.p.modfile.filehash,
-            self.p.modfile.featurehash,
+            self.p.modfile.datahash,
+            self.p.modfile.shaaaa1,
         )
     
-    def test_featurehash_base_class_two(self):
-        self.p.save()
+    def _test_featurehash_base_class_three(self):
+        #self.p.save()
         self.assertEqual(
-            self.p.modfile.filehash,
-            self.p.modfile.sha1,
-        )
-    
-    def test_featurehash_base_class_three(self):
-        self.p.save()
-        self.assertEqual(
-            self.p.modfile.filehash,
-            self.p.modfile.sha1feature,
-        )
-    
-    def test_featurehash_base_class_three_point_five(self):
-        self.p.save()
-        self.assertEqual(
-            self.p.modfile.featurehash,
+            self.p.modfile.datahash,
             self.p.modfile.sha1feature,
         )
     
     def test_featurehash_base_class_four(self):
-        self.p.save()
+        #self.p.save()
         self.assertEqual(
             self.p.modfile.sha1feature,
-            self.p.modfile.sha1,
-        )
-    def test_featurehash_base_class_five(self):
-        self.p.save()
-        self.assertEqual(
-            self.p.modfile.featurehash,
-            self.p.modfile.sha1,
+            self.p.modfile.shaaaa1,
         )
 
 class CustomHasherTests(SonnarBaseTest):

@@ -4,7 +4,7 @@ from sonnar.features.base import Feature
 from sonnar.modelfields import ModularFile
 
 class SHA1(Feature):
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if field_file.storage.exists(field_file.name):
             close = field_file.closed
             dfile = field_file.storage.open(field_file.name)
@@ -30,7 +30,7 @@ class HashFeature(Feature):
             self.hasher = hasher
         super(HashFeature, self).__init__(*args, **kwargs)
     
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if field_file.storage.exists(field_file.name):
             close = field_file.closed
             dfile = field_file.storage.open(field_file.name)

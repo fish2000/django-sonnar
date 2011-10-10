@@ -9,7 +9,17 @@ from sonnar.features.base import Feature
 from sonnar.features.images import PILImage, WidthFeature, HeightFeature, OpenCVHandle
 from sonnar.features.hashing import SHA1, HashFeature, SHA1Feature
 
-class TestModel(models.Model):
+class BaseTestModel(models.Model):
+    class Meta:
+        abstract = True
+    def delete(self):
+        from sonnar import signals
+        for feature in self._meta.get_field_by_name('modfile')[0]._features.values():
+            signals.prepare_feature._remove_receiver(feature._prepare_value)
+        super(BaseTestModel, self).delete()
+
+
+class TestModel(BaseTestModel):
     id = models.AutoField(primary_key=True)
     modfile = ModularField(name='modfile',
         upload_to="modfiles",
@@ -21,24 +31,22 @@ class TestModel(models.Model):
         blank=True,
         null=True)
 
-class TestHashingModel(models.Model):
+class TestHashingModel(BaseTestModel):
     id = models.AutoField(primary_key=True)
     modfile = ModularField(name='modfile',
         upload_to="modfiles",
         features=(
-            SHA1('filehash', preload=True),
-            SHA1Feature('sha1', preload=True),
-            
-            HashFeature('featurehash', preload=True),
-            HashFeature('sha1feature', preload=True,
+            SHA1('datahash', preload=True),
+            SHA1Feature('shaaaa1', preload=True),
+            HashFeature('sha1feature', preload=False,
                 hasher=lambda data: hashlib.sha1(data).hexdigest()),
         ),
-        verbose_name="Modular File",
+        verbose_name="Modular Hashing Test File",
         blank=True,
         null=True)
 
 
-class TestCustomHashingModel(models.Model):
+class TestCustomHashingModel(BaseTestModel):
     id = models.AutoField(primary_key=True)
     modfile = ModularField(name='modfile',
         upload_to="modfiles",
@@ -52,12 +60,12 @@ class TestCustomHashingModel(models.Model):
                 hasher=lambda data: hashlib.sha512(data).hexdigest()),
             ),
         
-        verbose_name="Modular File",
+        verbose_name="Modular Custom Hashing Test File",
         blank=True,
         null=True)
 
 
-class TestImageModel(models.Model):
+class TestImageModel(BaseTestModel):
     id = models.AutoField(primary_key=True)
     
     filehash = FileHashField(verbose_name="File data hash",

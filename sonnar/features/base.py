@@ -70,7 +70,7 @@ class FeatureDescriptor(object):
         
         if feature.value is None:
             signals.prepare_feature.send_now(
-                sender=field_file.__class__,
+                sender=feature.__class__,
                 instance=self.instance,
                 field_name=self.field_name,
                 field_file=field_file,
@@ -107,26 +107,27 @@ class Feature(object):
                 self.requires.append(requires)
     
     def _prepare_value(self, **kwargs): # signal, sender, instance, field_file, field_name, feature_name
+        sender = kwargs.get('sender')
         instance = kwargs.get('instance')
         field_file = kwargs.get('field_file')
         field_name = kwargs.get('field_name')
         feature_name = kwargs.get('feature_name')
         
         feature = field_file._features[feature_name]
-        source = field_file._features.get(feature.source, None)
+        src = field_file._features.get(feature.source, None)
         
         # RECURSION!!!!!!!!
-        if source is not None:
-            source._prepare_value(instance=instance, field_file=field_file,
-                field_name=field_name, feature_name=source.name)
+        if src is not None:
+            src._prepare_value(instance=instance,
+                field_file=field_file, field_name=field_name, feature_name=src.name)
         
-        feature.value = feature.prepare_value(instance, field_file, field_name,
-            source=source)
+        feature.value = feature.prepare_value(instance,
+            field_file, field_name, feature.name, source=src)
         
-    def prepare_value(self, instance, field_file, field_name, source=None):
-        return "%s %s -> %s -> %s" % (
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
+        return "%s %s -> %s -> %s (%s)" % (
             instance.__class__.__name__, instance.pk,
-            field_name, self.name)
+            field_name, feature_name, source)
     
     def get_value(self):
         return self.value
@@ -139,8 +140,9 @@ class Feature(object):
                     instance=instance, field_name=field_name, field_file=field_file))
                 
                 signals.prepare_feature.connect(self._prepare_value,
-                    sender=field_file.__class__,
-                    dispatch_uid="feature-prepare-feature-%s" % field_name)
+                    sender=self.__class__,
+                    dispatch_uid="feature-prepare-feature-%s-%s-%s-%s" % (
+                        str(field_file), str(instance), field_name, name))
     
     def contribute_to_class(self, cls, name):
         pass

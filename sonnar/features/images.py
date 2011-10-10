@@ -8,27 +8,27 @@ except ImportError:
     import Image
 
 class PILImage(Feature):
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if field_file.storage.exists(field_file.name):
             return Image.open(field_file.storage.open(field_file.name))
         return None
 
 class WidthFeature(Feature):
     default = 0
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if source is None:
             return self.default
         return source.get_value().size[0]
 
 class HeightFeature(Feature):
     default = 0
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if source is None:
             return self.default
         return source.get_value().size[1]
 
 class OpenCVHandle(Feature):
-    def prepare_value(self, instance, field_file, field_name, source=None):
+    def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
         if source is None:
             return cv.LoadImage(field_file.path)
         else:

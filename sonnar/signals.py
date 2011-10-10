@@ -29,6 +29,7 @@ clear_features = BaseSignal(providing_args={
 
 prepare_feature = BaseSignal(providing_args={
     'instance':             ModelInstanceMap,
+    'field_file':           PickleMap,
     'field_name':           IDMap,
     'feature_name':         IDMap,
 })

@@ -65,8 +65,9 @@ class ModularFileDescriptor(files.FileDescriptor):
 class FeaturefulFieldFile(files.FieldFile):
     def __new__(cls, instance, field, name):
         supercls = files.FieldFile
-        def __init__(self, instance, field, name):
-            supercls.__init__(self, instance, field, name)
+        
+        def __init__(mself, minstance, mfield, mname):
+            supercls.__init__(mself, minstance, mfield, mname)
         
         outdic = dict(cls.__dict__)
         outdic.update({
@@ -78,7 +79,9 @@ class FeaturefulFieldFile(files.FieldFile):
         out_field_file = OutCls(instance, field, name)
         
         for feature in field._features.values():
-            feature.contribute_to_field(out_field_file, instance, field.name, feature.name)
+            feature.contribute_to_field(out_field_file,
+                instance, field.name, feature.name)
+        
         return out_field_file
 
 
@@ -150,13 +153,13 @@ class ModularField(files.FileField):
         
         signals.post_init.connect(self.update_data_fields, sender=cls,
             dispatch_uid="post-init-update-data-fields")
-        signals.post_init.connect(self.preload_features, sender=cls,
-            dispatch_uid="post-init-preload-features")
+        #signals.post_init.connect(self.preload_features, sender=cls,
+        #    dispatch_uid="post-init-preload-features")
         
         signals.post_init.connect(self.update_data_fields, sender=cls,
             dispatch_uid="post-save-update-data-fields")
-        signals.post_save.connect(self.preload_features, sender=cls,
-            dispatch_uid="post-save-preload-features")
+        #signals.post_save.connect(self.preload_features, sender=cls,
+        #    dispatch_uid="post-save-preload-features")
     
     def preload_features(self, instance, **kwargs):
         if instance.pk:
