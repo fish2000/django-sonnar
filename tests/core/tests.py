@@ -48,7 +48,7 @@ class SonnarBaseTest(TestCase):
     def tearDown(self):
         path = self.p.modfile.path
         os.remove(os.path.join(settings.MEDIA_ROOT, path))
-        #os.removedirs(os.path.join(settings.MEDIA_ROOT, 'images'))
+        os.removedirs(os.path.join(settings.MEDIA_ROOT, 'modfiles'))
         self.p.delete()
 
 
@@ -59,22 +59,22 @@ class HasherTests(SonnarBaseTest):
     def test_sha1_data_hash(self):
         self.p.save()
         print "HASH: %s" % self.p.modfile.datahash
-        print "HASH: %s" % self.p.modfile.shaaaa1
+        print "HASH: %s" % self.p.modfile.sha1
         print "HASH: %s" % self.p.modfile.sha1feature
         
         self.p.save()
         print "HASH: %s" % self.p.modfile.datahash
-        print "HASH: %s" % self.p.modfile.shaaaa1
+        print "HASH: %s" % self.p.modfile.sha1
         print "HASH: %s" % self.p.modfile.sha1feature
     
-    def _test_featurehash_base_class_two(self):
+    def test_featurehash_base_class_two(self):
         #self.p.save()
         self.assertEqual(
             self.p.modfile.datahash,
-            self.p.modfile.shaaaa1,
+            self.p.modfile.sha1,
         )
     
-    def _test_featurehash_base_class_three(self):
+    def test_featurehash_base_class_three(self):
         #self.p.save()
         self.assertEqual(
             self.p.modfile.datahash,
@@ -84,8 +84,8 @@ class HasherTests(SonnarBaseTest):
     def test_featurehash_base_class_four(self):
         #self.p.save()
         self.assertEqual(
-            self.p.modfile.sha1feature,
-            self.p.modfile.shaaaa1,
+            self.p.modfile.sha1,
+            self.p.modfile.datahash,
         )
 
 class CustomHasherTests(SonnarBaseTest):
@@ -93,6 +93,14 @@ class CustomHasherTests(SonnarBaseTest):
     modl = TestCustomHashingModel
     
     def test_custom_hashers(self):
+        print "SHA1: %s" % self.p.modfile.sha1
+        print "MD5: %s" % self.p.modfile.md5
+        print "SHA512: %s" % self.p.modfile.sha512
+        
+        print "SHA1: %s" % self.p.modfile.sha1
+        print "MD5: %s" % self.p.modfile.md5
+        print "SHA512: %s" % self.p.modfile.sha512
+        
         print "SHA1: %s" % self.p.modfile.sha1
         print "MD5: %s" % self.p.modfile.md5
         print "SHA512: %s" % self.p.modfile.sha512
@@ -120,7 +128,7 @@ class SonnarImageTests(SonnarBaseTest):
         self.assertTrue(int(self.p.modfile.height) == 600)
     
     def test_opencv_feature_without_source(self):
-        print "*** OpenCV (via filesystem): %s" % self.p.modfile.cv2
+        print "*** OpenCV (via filesystem): %s" % self.p.modfile.cvfile
     
     def test_opencv_feature_with_source(self):
         print "*** OpenCV (via PIL source): %s" % self.p.modfile.cv
@@ -149,12 +157,4 @@ class SonnarImageTests(SonnarBaseTest):
         self.p.modfile.save('test.jpg', ContentFile(img3.read()))
         self.failIf(hsh == self.p.filehash)
         img.close()
-    
-    def tearDown(self):
-        path = self.p.modfile.path
-        os.remove(os.path.join(settings.MEDIA_ROOT, path))
-        #os.removedirs(os.path.join(settings.MEDIA_ROOT, 'images'))
-        self.p.delete()
-    
-    
     

@@ -5,9 +5,10 @@ from sonnar.modelfields import ModularFile
 
 class SHA1(Feature):
     def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
-        if field_file.storage.exists(field_file.name):
-            close = field_file.closed
-            dfile = field_file.storage.open(field_file.name)
+        ifile = getattr(instance, field_name)
+        if ifile.storage.exists(ifile.name):
+            close = ifile.closed
+            dfile = ifile.storage.open(ifile.name)
             pos = dfile.tell()
             dat = dfile.read()
             
@@ -31,9 +32,11 @@ class HashFeature(Feature):
         super(HashFeature, self).__init__(*args, **kwargs)
     
     def prepare_value(self, instance, field_file, field_name, feature_name, source=None):
-        if field_file.storage.exists(field_file.name):
-            close = field_file.closed
-            dfile = field_file.storage.open(field_file.name)
+        ifile = getattr(instance, field_name)
+        if ifile.storage.exists(ifile.name):
+            
+            close = ifile.closed
+            dfile = ifile.storage.open(ifile.name)
             pos = dfile.tell()
             dat = dfile.read()
             
@@ -50,6 +53,10 @@ class SHA1Feature(HashFeature):
     @staticmethod
     def hasher(data):
         return hashlib.sha1(data).hexdigest()
+
+
+class SHA1Dogg(HashFeature):
+    hasher = staticmethod(lambda data: hashlib.sha1(data).hexdigest())
 
 
 

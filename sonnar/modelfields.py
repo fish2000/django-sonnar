@@ -22,7 +22,6 @@ class FileHashField(fields.CharField):
         kwargs.setdefault('db_index', True)
         kwargs.setdefault('max_length', 40)
         kwargs.setdefault('editable', False)
-        #kwargs.setdefault('unique', True)
         kwargs.setdefault('blank', True)
         kwargs.setdefault('null', True)
         super(FileHashField, self).__init__(*args, **kwargs)
@@ -153,13 +152,10 @@ class ModularField(files.FileField):
         
         signals.post_init.connect(self.update_data_fields, sender=cls,
             dispatch_uid="post-init-update-data-fields")
-        #signals.post_init.connect(self.preload_features, sender=cls,
-        #    dispatch_uid="post-init-preload-features")
         
-        signals.post_init.connect(self.update_data_fields, sender=cls,
+        signals.post_save.connect(self.update_data_fields, sender=cls,
             dispatch_uid="post-save-update-data-fields")
-        #signals.post_save.connect(self.preload_features, sender=cls,
-        #    dispatch_uid="post-save-preload-features")
+        
     
     def preload_features(self, instance, **kwargs):
         if instance.pk:

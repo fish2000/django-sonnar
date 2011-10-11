@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from sonnar.modelfields import FileHashField, ModularField
 from sonnar.features.base import Feature
 from sonnar.features.images import PILImage, WidthFeature, HeightFeature, OpenCVHandle
-from sonnar.features.hashing import SHA1, HashFeature, SHA1Feature
+from sonnar.features.hashing import SHA1, SHA1Dogg, HashFeature, SHA1Feature
 
 class BaseTestModel(models.Model):
     class Meta:
@@ -36,9 +36,9 @@ class TestHashingModel(BaseTestModel):
     modfile = ModularField(name='modfile',
         upload_to="modfiles",
         features=(
-            SHA1('datahash', preload=True),
-            SHA1Feature('shaaaa1', preload=True),
-            HashFeature('sha1feature', preload=False,
+            SHA1Dogg('datahash', preload=True),
+            SHA1Feature('sha1', preload=True),
+            HashFeature('sha1feature', preload=True,
                 hasher=lambda data: hashlib.sha1(data).hexdigest()),
         ),
         verbose_name="Modular Hashing Test File",
@@ -84,7 +84,7 @@ class TestImageModel(BaseTestModel):
             WidthFeature('width', source='pil'),
             HeightFeature('height', source='pil'),
             OpenCVHandle('cv', source='pil'),
-            OpenCVHandle('cv2'),
+            OpenCVHandle('cvfile'),
             
             Feature('a_feature'),
             Feature('another_feature'),

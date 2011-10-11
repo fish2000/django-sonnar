@@ -69,12 +69,22 @@ class FeatureDescriptor(object):
         feature = field_file._features[self.feature_name]
         
         if feature.value is None:
+            
+            feature._prepare_value(
+                sender=feature.__class__,
+                instance=self.instance,
+                field_name=self.field_name,
+                field_file=field_file,
+                feature_name=feature.name)
+            
+            '''
             signals.prepare_feature.send_now(
                 sender=feature.__class__,
                 instance=self.instance,
                 field_name=self.field_name,
                 field_file=field_file,
                 feature_name=feature.name)
+            '''
         
         return feature.get_value()
 
@@ -138,11 +148,12 @@ class Feature(object):
                 
                 setattr(field_file.__class__, name, self.descriptor(self,
                     instance=instance, field_name=field_name, field_file=field_file))
-                
+                '''
                 signals.prepare_feature.connect(self._prepare_value,
                     sender=self.__class__,
                     dispatch_uid="feature-prepare-feature-%s-%s-%s-%s" % (
                         str(field_file), str(instance), field_name, name))
+                '''
     
     def contribute_to_class(self, cls, name):
         pass
